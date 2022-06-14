@@ -1,25 +1,45 @@
 import styled from '@emotion/styled'
-import { Button, Card } from '@mui/material'
-import { GetServerSideProps } from 'next/types'
+import { Button } from '@mui/material'
+import { useCallback, useState } from 'react'
+import { ScreenShotResponseType } from '~/pages/api/getScreenshot'
 
 /**
  * アプリのメインボディ
  */
 const MainControl = () => {
-  const startPolling = async () => {}
+  const [screenshot, setScreenshot] = useState<string>()
 
-  const Center = styled.div`
+  const postScreenShot = useCallback(async () => {
+    const res = await fetch('/api/getScreenshot', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    const json: ScreenShotResponseType = await res.json()
+    setScreenshot(json.data)
+  }, [setScreenshot])
+
+  const ConfigArea = styled.div`
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    width: 100vw;
-    height: 100vh;
+    justify-content: center;
+  `
+
+  const ScreenshotArea = styled.div`
+    text-align: center;
   `
 
   return (
-    <Center>
-      <Button onClick={startPolling}>スタート</Button>
-    </Center>
+    <>
+      <ConfigArea>
+        <Button onClick={postScreenShot}>スクリーンショット撮影</Button>
+      </ConfigArea>
+      <ScreenshotArea>
+        {screenshot ? <img src={`data:image/png;base64,${screenshot}`} alt='' /> : <div></div>}
+      </ScreenshotArea>
+    </>
   )
 }
 

@@ -1,7 +1,7 @@
 import prisma from '~/libs/prisma'
-import type { NextApiHandler } from 'next'
+import type { NextApiHandler, NextApiRequest, NextApiResponse } from 'next'
 
-const handler: NextApiHandler = async (req, res) => {
+const handler: NextApiHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     res.json({
       ok: true,

@@ -37,3 +37,6 @@ yarn-error.log*
 # config for IDE/Editor
 /.idea/
 /.vscode/
+
+# other
+screenshot.png

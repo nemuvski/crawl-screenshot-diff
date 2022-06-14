@@ -1,6 +1,7 @@
 # diff-screenshot-resemble
 - Next.js + Puppeteer + Resemble.jsを用いたサイトのスクショ比較アプリです。
 - 指定した時間間隔で指定したサイトのスクショを撮影し、差分を比較します。
+- レスポンシブ未対応です (PCサイズのみ)
 
 ## 主要なサードパーティライブラリ一覧
 ### MUI
