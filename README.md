@@ -1,5 +1,5 @@
 # diff-screenshot-resemble
-- Next.js + Puppeteer + Resemble.jsを用いたサイトのスクショ比較アプリです。
+- Next.js +　Prisma + Puppeteer + Resemble.jsを用いたサイトのスクショ比較アプリです。
 - 指定した時間間隔で指定したサイトのスクショを撮影し、差分を比較します。
 - レスポンシブ未対応です (PCサイズのみ)
 
@@ -25,8 +25,8 @@
 #### Prismaのセットアップ
 
 ```zsh
-npx prisma migrate dev --preview-feature --name init
-$ npx prisma generate
+yarn prisma migrate dev --preview-feature --name init
+$ yarn prisma generate
 ```
 
 ## コマンド

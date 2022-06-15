@@ -20,6 +20,11 @@ const base = css`
   body {
     background-color: lightgray;
   }
+
+  main {
+    max-width: 1280px;
+    margin: auto;
+  }
 `
 
 export default css(customCSSProps, base)

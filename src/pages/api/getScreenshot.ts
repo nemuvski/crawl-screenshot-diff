@@ -15,7 +15,7 @@ const handler: NextApiHandler = async (req: NextApiRequest, res: NextApiResponse
   try {
     const browser = await Puppeteer.launch({ headless: false })
     const page = await browser.newPage()
-    await page.goto('https://www.nict.go.jp/JST/JST5.html')
+    await page.goto('https://www.nict.go.jp/JST/JST5.html', { waitUntil: 'networkidle0' })
     const screenshot = await page.screenshot({ path: 'screenshot.png', encoding: 'base64' })
     await browser.close()
 
