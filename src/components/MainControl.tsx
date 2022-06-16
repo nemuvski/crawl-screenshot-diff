@@ -1,5 +1,19 @@
 import styled from '@emotion/styled'
-import { Button, Card, CardContent, ImageList, ImageListItem, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  FormControl,
+  ImageList,
+  ImageListItem,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { useCallback, useState } from 'react'
 import useSWR from 'swr'
 import { ScreenShotResponseType } from '~/pages/api/getScreenshot'
@@ -10,13 +24,15 @@ import { ScreenShotResponseType } from '~/pages/api/getScreenshot'
 const MainControl = () => {
   const [screenshotOld, setScreenshotOld] = useState<string>()
   const [screenshotNew, setScreenshotNew] = useState<string>()
+  const [pollingInterval, setPollingInterval] = useState(5000)
 
-  const fetcher = (data: string): Promise<any> => fetch(data).then((res) => res.json())
+  const fetcher = (data: string): Promise<any> => {
+    return fetch(data).then((res) => res.json())
+  }
   const [isProcessing, setIsProcessing] = useState(false)
   const { data, error } = useSWR('/api/getScreenshot', fetcher, {
-    refreshInterval: isProcessing ? 5000 : 0,
+    refreshInterval: isProcessing ? pollingInterval : 0,
     onSuccess: (json: ScreenShotResponseType) => {
-      console.log('fetch completed ->', data)
       // [screenshotOld] に古いスクショを移動し、[screenshotNew] に新しいスクショを代入
       // 初期スクショがない (最初のスクショ撮影時)、最新のスクショへの移動は行わない
       if (screenshotNew) {
@@ -26,20 +42,9 @@ const MainControl = () => {
     },
   })
 
-  // スクリーンショット取得処理
-  // const getScreenShot = useCallback(async () => {
-  //   const res = await fetch('/api/getScreenshot', {
-  //     method: 'GET',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //   })
-  //   const json: ScreenShotResponseType = await res.json()
-  //   setScreenshot(json.data)
-  // }, [setScreenshot])
-
-  // スクショ取得定期実行開始
-  // const startPolling = () => {}
+  const setInterval = (event: SelectChangeEvent) => {
+    setPollingInterval(Number(event.target.value))
+  }
 
   const togglePollingState = () => {
     setIsProcessing(!isProcessing)
@@ -55,6 +60,25 @@ const MainControl = () => {
   return (
     <>
       <ConfigArea>
+        <Box style={{ width: '400px' }}>
+          <FormControl fullWidth>
+            <InputLabel id='demo-simple-select-label'>ポーリング間隔</InputLabel>
+            <Select
+              labelId='demo-simple-select-label'
+              id='demo-simple-select'
+              size='small'
+              value={pollingInterval.toString()}
+              label='ポーリング間隔 (s)'
+              onChange={setInterval}
+            >
+              <MenuItem value={5000}>5s</MenuItem>
+              <MenuItem value={10000}>10s</MenuItem>
+              <MenuItem value={20000}>20s</MenuItem>
+              <MenuItem value={50000}>50s</MenuItem>
+              <MenuItem value={100000}>100s</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
         <Button onClick={togglePollingState}>{isProcessing ? 'ポーリング終了' : 'ポーリング開始'}</Button>
       </ConfigArea>
       <ImageList variant='quilted' cols={2}>
