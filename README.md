@@ -28,9 +28,8 @@
   - 解決方法は [こちら](https://coneta.jp/article/e10b28ac-f8d5-4839-bb41-049de09eb8df/)を参照。
 
 ### Prisma
-- Node.jsのためのORM
-- 追々DBとかStorageを利用することを考えて導入したが、現状はCRUDは行わないAPIとして存在しています。
-- スクショの撮影、比較はPrisma上に実装しました。
+- Node.jsのためのORM。
+- 追々DBとかStorageを利用することを考えて導入したが、現状は特に何もしていません。
 
 #### Prismaのセットアップ
 
