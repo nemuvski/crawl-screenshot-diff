@@ -17,6 +17,14 @@ import { ScreenShotResponseType } from '~/pages/api/getScreenshot'
 import { ScreenshotDiffRequestBody, ScreenshotDiffResponseType } from '~/pages/api/getScreenshotDiff'
 import { setMediaType } from '~/utils/image'
 
+type DiffScreenShotType = {
+  old: string
+  new: string
+}
+
+// エイリアス
+type ScreenShotValue = string | null
+
 /**
  * アプリのメインボディ
  */
@@ -33,22 +41,32 @@ const MainControl = () => {
   const { data, error, mutate } = useSWR('/api/getScreenshot', fetcher, {
     refreshInterval: isProcessing ? pollingInterval : 0,
     onSuccess: async (json: ScreenShotResponseType) => {
+      // useStateのstateが再レンダリングしないと変わらないため、コードの視認性を
+      // 上げるためにスクショ結果用の変数を用意している。
+      // FIXME: もっといい方法ないか？
+      let newValue: ScreenShotValue = null
+      let oldValue: ScreenShotValue = null
+
       // [screenshotOld] に古いスクショを移動し、[screenshotNew] に新しいスクショを代入
-      // 初期スクショがない (最初のスクショ撮影時)、最新のスクショへの移動は行わない
+      // 初期スクショがない (最初のスクショ撮影時)、[screenshotOld]への移動は行わない
       if (screenshotNew) {
         setScreenshotOld(screenshotNew)
+        oldValue = screenshotNew
       }
       setScreenshotNew(json.data)
+      newValue = json.data
 
-      diffScreenshot()
+      if (newValue && oldValue) {
+        diffScreenshot(oldValue, newValue)
+      }
     },
   })
 
-  const diffScreenshot = async () => {
+  const diffScreenshot = async (oldImage: string, newImage: string) => {
     if (screenshotNew) {
       const body: ScreenshotDiffRequestBody = {
-        image1: setMediaType(screenshotOld ?? ''),
-        image2: setMediaType(screenshotNew ?? ''),
+        image1: setMediaType(oldImage),
+        image2: setMediaType(newImage),
       }
       try {
         const res = await fetch('/api/getScreenshotDiff', {

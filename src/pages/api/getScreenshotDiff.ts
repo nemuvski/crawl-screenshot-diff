@@ -34,11 +34,11 @@ const handler: NextApiHandler = async (req: NextApiRequest, res: NextApiResponse
 
     // データが存在しない、もしくはResembleの比較の結果がエラーの場合
     if (buffer === null || data.error) {
-      res.status(400)
       res.json({
         error: data.error,
         message: 'リクエストが不正です。image1, image2にはbase64のstringを指定してください。',
       })
+      res.status(400)
       return
     }
 

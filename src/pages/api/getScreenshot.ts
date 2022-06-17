@@ -13,6 +13,7 @@ export type ScreenShotResponseType = {
  */
 const handler: NextApiHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
+    // [headless] をtrueにすれば視覚的なブラウザ起動を抑制できる
     const browser = await Puppeteer.launch({ headless: false })
     const page = await browser.newPage()
     await page.goto('https://www.nict.go.jp/JST/JST5.html', { waitUntil: 'networkidle0' })
