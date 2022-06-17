@@ -25,19 +25,19 @@ const handler: NextApiHandler = async (req: NextApiRequest, res: NextApiResponse
         .compareTo(req.body.image2)
         .ignoreColors()
         .onComplete((data: ComparisonResult) => {
-          console.log('complete: ', data)
           resolve(data)
         })
     })
 
-    console.log('then', data)
-    const buffer = data.getBuffer ? data.getBuffer(true) : null
+    // data.getBufferの引数をtrueにすると比較元の画像も並べてくれる
+    const buffer = data.getBuffer ? data.getBuffer(false) : null
 
     // データが存在しない、もしくはResembleの比較の結果がエラーの場合
     if (buffer === null || data.error) {
-      res.status(500)
+      res.status(400)
       res.json({
         error: data.error,
+        message: 'リクエストが不正です。image1, image2にはbase64のstringを指定してください。',
       })
       return
     }
@@ -48,7 +48,7 @@ const handler: NextApiHandler = async (req: NextApiRequest, res: NextApiResponse
     } as ScreenshotDiffResponseType)
     return
   } catch (error) {
-    console.log(error)
+    console.error(error)
     res.status(500)
     res.json({ error: error })
   }

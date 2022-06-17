@@ -45,7 +45,6 @@ const MainControl = () => {
   })
 
   const diffScreenshot = async () => {
-    // 比較可能な画像が両方ある場合
     if (screenshotNew) {
       const body: ScreenshotDiffRequestBody = {
         image1: setMediaType(screenshotOld ?? ''),
@@ -60,12 +59,9 @@ const MainControl = () => {
           body: JSON.stringify(body),
         })
         const json: ScreenshotDiffResponseType = await res.json()
-        console.log(json)
-
         setScreenshotDiff(json.data)
-        console.log(json)
       } catch (e) {
-        console.log(e)
+        console.error(e)
       }
     }
   }
@@ -85,6 +81,13 @@ const MainControl = () => {
     justify-content: center;
   `
 
+  const Head = styled(Typography)`
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: white;
+  `
+
   return (
     <>
       <ConfigArea>
@@ -99,11 +102,11 @@ const MainControl = () => {
               label='ポーリング間隔 (s)'
               onChange={setInterval}
             >
-              <MenuItem value={5000}>5s</MenuItem>
-              <MenuItem value={10000}>10s</MenuItem>
-              <MenuItem value={20000}>20s</MenuItem>
-              <MenuItem value={50000}>50s</MenuItem>
-              <MenuItem value={100000}>100s</MenuItem>
+              <MenuItem value={5000}>5秒</MenuItem>
+              <MenuItem value={10000}>10秒</MenuItem>
+              <MenuItem value={20000}>20秒</MenuItem>
+              <MenuItem value={50000}>50秒</MenuItem>
+              <MenuItem value={100000}>100秒</MenuItem>
             </Select>
           </FormControl>
         </Box>
@@ -112,15 +115,15 @@ const MainControl = () => {
       </ConfigArea>
       <ImageList variant='quilted' cols={2}>
         <ImageListItem>
-          <Typography variant='h5' component='div' textAlign='center'>
+          <Head variant='h5' textAlign='center'>
             古いスクショ
-          </Typography>
+          </Head>
           {screenshotOld ? <img src={`data:image/png;base64,${screenshotOld}`} alt='古いスクショ' /> : <div></div>}
         </ImageListItem>
         <ImageListItem>
-          <Typography variant='h5' component='div' textAlign='center'>
+          <Head variant='h5' textAlign='center'>
             新しいスクショ
-          </Typography>
+          </Head>
           {screenshotNew ? (
             <img src={`data:image/png;base64,${screenshotNew}`} alt='新しいスクショ' style={{ marginLeft: '4px' }} />
           ) : (
@@ -130,14 +133,10 @@ const MainControl = () => {
       </ImageList>
       <ImageList variant='quilted' cols={1}>
         <ImageListItem>
-          <Typography variant='h5' component='div' textAlign='center'>
+          <Head variant='h5' textAlign='center'>
             比較結果
-          </Typography>
-          {screenshotDiff ? (
-            <img src={`data:image/png;base64,${screenshotDiff}`} alt='スクショの比較結果' />
-          ) : (
-            <div></div>
-          )}
+          </Head>
+          {screenshotDiff ? <img src={setMediaType(screenshotDiff)} alt='スクショの比較結果' /> : <div></div>}
         </ImageListItem>
       </ImageList>
     </>
