@@ -2,8 +2,6 @@ import styled from '@emotion/styled'
 import {
   Box,
   Button,
-  Card,
-  CardContent,
   FormControl,
   ImageList,
   ImageListItem,
@@ -11,12 +9,13 @@ import {
   MenuItem,
   Select,
   SelectChangeEvent,
-  TextField,
   Typography,
 } from '@mui/material'
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import useSWR from 'swr'
 import { ScreenShotResponseType } from '~/pages/api/getScreenshot'
+import { ScreenshotDiffRequestBody, ScreenshotDiffResponseType } from '~/pages/api/getScreenshotDiff'
+import { setMediaType } from '~/utils/image'
 
 /**
  * アプリのメインボディ
@@ -24,23 +23,52 @@ import { ScreenShotResponseType } from '~/pages/api/getScreenshot'
 const MainControl = () => {
   const [screenshotOld, setScreenshotOld] = useState<string>()
   const [screenshotNew, setScreenshotNew] = useState<string>()
+  const [screenshotDiff, setScreenshotDiff] = useState<string>()
   const [pollingInterval, setPollingInterval] = useState(5000)
 
   const fetcher = (data: string): Promise<any> => {
     return fetch(data).then((res) => res.json())
   }
   const [isProcessing, setIsProcessing] = useState(false)
-  const { data, error } = useSWR('/api/getScreenshot', fetcher, {
+  const { data, error, mutate } = useSWR('/api/getScreenshot', fetcher, {
     refreshInterval: isProcessing ? pollingInterval : 0,
-    onSuccess: (json: ScreenShotResponseType) => {
+    onSuccess: async (json: ScreenShotResponseType) => {
       // [screenshotOld] に古いスクショを移動し、[screenshotNew] に新しいスクショを代入
       // 初期スクショがない (最初のスクショ撮影時)、最新のスクショへの移動は行わない
       if (screenshotNew) {
         setScreenshotOld(screenshotNew)
       }
       setScreenshotNew(json.data)
+
+      diffScreenshot()
     },
   })
+
+  const diffScreenshot = async () => {
+    // 比較可能な画像が両方ある場合
+    if (screenshotNew) {
+      const body: ScreenshotDiffRequestBody = {
+        image1: setMediaType(screenshotOld ?? ''),
+        image2: setMediaType(screenshotNew ?? ''),
+      }
+      try {
+        const res = await fetch('/api/getScreenshotDiff', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
+        })
+        const json: ScreenshotDiffResponseType = await res.json()
+        console.log(json)
+
+        setScreenshotDiff(json.data)
+        console.log(json)
+      } catch (e) {
+        console.log(e)
+      }
+    }
+  }
 
   const setInterval = (event: SelectChangeEvent) => {
     setPollingInterval(Number(event.target.value))
@@ -80,6 +108,7 @@ const MainControl = () => {
           </FormControl>
         </Box>
         <Button onClick={togglePollingState}>{isProcessing ? 'ポーリング終了' : 'ポーリング開始'}</Button>
+        <Button onClick={() => mutate()}>一度だけ実行</Button>
       </ConfigArea>
       <ImageList variant='quilted' cols={2}>
         <ImageListItem>
@@ -94,6 +123,18 @@ const MainControl = () => {
           </Typography>
           {screenshotNew ? (
             <img src={`data:image/png;base64,${screenshotNew}`} alt='新しいスクショ' style={{ marginLeft: '4px' }} />
+          ) : (
+            <div></div>
+          )}
+        </ImageListItem>
+      </ImageList>
+      <ImageList variant='quilted' cols={1}>
+        <ImageListItem>
+          <Typography variant='h5' component='div' textAlign='center'>
+            比較結果
+          </Typography>
+          {screenshotDiff ? (
+            <img src={`data:image/png;base64,${screenshotDiff}`} alt='スクショの比較結果' />
           ) : (
             <div></div>
           )}
