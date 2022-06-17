@@ -39,6 +39,9 @@ const MainControl = () => {
   }
   const [isProcessing, setIsProcessing] = useState(false)
   const { data, error, mutate } = useSWR('/api/getScreenshot', fetcher, {
+    // ユーザ操作以外で再検証が発生しないよう修正
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
     refreshInterval: isProcessing ? pollingInterval : 0,
     onSuccess: async (json: ScreenShotResponseType) => {
       // useStateのstateが再レンダリングしないと変わらないため、コードの視認性を
