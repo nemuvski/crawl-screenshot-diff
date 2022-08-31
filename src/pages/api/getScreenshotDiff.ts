@@ -1,11 +1,13 @@
-// import resemble from 'node-resemble-js'
-import resemble, { ComparisonResult } from 'resemblejs'
-import prisma from '~/libs/prisma'
+import pixelmatch from 'pixelmatch'
+import { PNG } from 'pngjs'
+import { base64ToBuffer } from '~/utils/image'
 import type { NextApiHandler, NextApiRequest, NextApiResponse } from 'next'
 
 export type ScreenshotDiffResponseType = {
   data: string
-  misMatchPercentage: number
+  width: number
+  height: number
+  numDiffPixels: number
 }
 
 export type ScreenshotDiffRequestBody = {
@@ -13,44 +15,35 @@ export type ScreenshotDiffRequestBody = {
   image2: string
 }
 
-export interface ScreenshotDiffRequest extends NextApiRequest {
-  body: ScreenshotDiffRequestBody
-}
-
 const handler: NextApiHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    // TODO: 型定義ファイル作りたい？
-    const data: ComparisonResult = await new Promise((resolve) => {
-      resemble(req.body.image1)
-        .compareTo(req.body.image2)
-        .ignoreColors()
-        .onComplete((data: ComparisonResult) => {
-          resolve(data)
-        })
+    // NOTE: image1とimage2はbase64文字列
+    const { image1, image2 } = req.body as ScreenshotDiffRequestBody
+
+    const imagePng1 = PNG.sync.read(base64ToBuffer(image1))
+    const imagePng2 = PNG.sync.read(base64ToBuffer(image2))
+    const { width, height } = imagePng1
+    const diff = new PNG({ width, height })
+    const numDiffPixels = pixelmatch(imagePng1.data, imagePng2.data, diff.data, width, height, {
+      threshold: 0.5,
+      diffColor: [255, 0, 0],
+      diffColorAlt: [255, 0, 0],
+      diffMask: false,
     })
 
-    // data.getBufferの引数をtrueにすると比較元の画像も並べてくれる
-    const buffer = data.getBuffer ? data.getBuffer(false) : null
-
-    // データが存在しない、もしくはResembleの比較の結果がエラーの場合
-    if (buffer === null || data.error) {
-      res.json({
-        error: data.error,
-        message: 'リクエストが不正です。image1, image2にはbase64のstringを指定してください。',
-      })
-      res.status(400)
-      return
+    const response: ScreenshotDiffResponseType = {
+      data: PNG.sync.write(diff).toString('base64'),
+      numDiffPixels,
+      width,
+      height,
     }
 
-    res.json({
-      data: Buffer.from(buffer).toString('base64'),
-      misMatchPercentage: data.misMatchPercentage,
-    } as ScreenshotDiffResponseType)
-    return
+    res.json(response)
   } catch (error) {
     console.error(error)
     res.status(500)
     res.json({ error: error })
   }
 }
+
 export default handler

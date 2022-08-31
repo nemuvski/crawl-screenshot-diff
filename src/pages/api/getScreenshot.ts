@@ -14,7 +14,7 @@ export type ScreenShotResponseType = {
 const handler: NextApiHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     // [headless] をtrueにすれば視覚的なブラウザ起動を抑制できる
-    const browser = await Puppeteer.launch({ headless: false })
+    const browser = await Puppeteer.launch({ headless: true })
     const page = await browser.newPage()
     await page.goto('https://www.nict.go.jp/JST/JST5.html', { waitUntil: 'networkidle0' })
     const screenshot = await page.screenshot({ path: 'screenshot.png', encoding: 'base64' })
@@ -28,4 +28,5 @@ const handler: NextApiHandler = async (req: NextApiRequest, res: NextApiResponse
     res.status(500)
   }
 }
+
 export default handler

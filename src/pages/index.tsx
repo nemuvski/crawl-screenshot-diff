@@ -3,19 +3,15 @@ import styled from '@emotion/styled'
 import { ThemeProvider } from '@mui/material'
 import { NextPage } from 'next'
 import Head from 'next/head'
-import { useEffect } from 'react'
 import MainControl from '~/components/MainControl'
 import globalStyle from '~/styles/global.style'
 import { theme } from '~/styles/libs/mui.style'
 
-// セッティング用定数
-const URL = 'https://www.nict.go.jp/JST/JST5.html' // 比較対象のURL
+const Title = styled.h1`
+  text-align: center;
+`
 
 const Home: NextPage = () => {
-  const Title = styled.h1`
-    text-align: center;
-  `
-
   return (
     <>
       <Head>

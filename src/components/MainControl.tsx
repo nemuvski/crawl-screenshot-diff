@@ -6,6 +6,7 @@ import {
   ImageList,
   ImageListItem,
   InputLabel,
+  Link,
   MenuItem,
   Select,
   SelectChangeEvent,
@@ -17,13 +18,27 @@ import { ScreenShotResponseType } from '~/pages/api/getScreenshot'
 import { ScreenshotDiffRequestBody, ScreenshotDiffResponseType } from '~/pages/api/getScreenshotDiff'
 import { setMediaType } from '~/utils/image'
 
-type DiffScreenShotType = {
-  old: string
-  new: string
-}
+const ConfigArea = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`
 
-// エイリアス
-type ScreenShotValue = string | null
+const Heading = styled(Typography)`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: white;
+`
+
+const PoweredBy = styled(Typography)`
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  font-size: 1rem;
+  background-color: white;
+`
 
 /**
  * アプリのメインボディ
@@ -38,7 +53,7 @@ const MainControl = () => {
     return fetch(data).then((res) => res.json())
   }
   const [isProcessing, setIsProcessing] = useState(false)
-  const { data, error, mutate } = useSWR('/api/getScreenshot', fetcher, {
+  const { mutate } = useSWR('/api/getScreenshot', fetcher, {
     // ユーザ操作以外で再検証が発生しないよう修正
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
@@ -46,9 +61,8 @@ const MainControl = () => {
     onSuccess: async (json: ScreenShotResponseType) => {
       // useStateのstateが再レンダリングしないと変わらないため、コードの視認性を
       // 上げるためにスクショ結果用の変数を用意している。
-      // FIXME: もっといい方法ないか？
-      let newValue: ScreenShotValue = null
-      let oldValue: ScreenShotValue = null
+      let newValue: string | null = null
+      let oldValue: string | null = null
 
       // [screenshotOld] に古いスクショを移動し、[screenshotNew] に新しいスクショを代入
       // 初期スクショがない (最初のスクショ撮影時)、[screenshotOld]への移動は行わない
@@ -95,20 +109,6 @@ const MainControl = () => {
     setIsProcessing(!isProcessing)
   }
 
-  const ConfigArea = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  `
-
-  const Head = styled(Typography)`
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background-color: white;
-  `
-
   return (
     <>
       <ConfigArea>
@@ -136,15 +136,15 @@ const MainControl = () => {
       </ConfigArea>
       <ImageList variant='quilted' cols={2}>
         <ImageListItem>
-          <Head variant='h5' textAlign='center'>
+          <Heading variant='h5' textAlign='center'>
             古いスクショ
-          </Head>
+          </Heading>
           {screenshotOld ? <img src={`data:image/png;base64,${screenshotOld}`} alt='古いスクショ' /> : <div></div>}
         </ImageListItem>
         <ImageListItem>
-          <Head variant='h5' textAlign='center'>
+          <Heading variant='h5' textAlign='center'>
             新しいスクショ
-          </Head>
+          </Heading>
           {screenshotNew ? (
             <img src={`data:image/png;base64,${screenshotNew}`} alt='新しいスクショ' style={{ marginLeft: '4px' }} />
           ) : (
@@ -154,9 +154,12 @@ const MainControl = () => {
       </ImageList>
       <ImageList variant='quilted' cols={1}>
         <ImageListItem>
-          <Head variant='h5' textAlign='center'>
+          <Heading variant='h5' textAlign='center'>
             比較結果
-          </Head>
+          </Heading>
+          <PoweredBy>
+            Diffs by <Link href='https://www.npmjs.com/package/pixelmatch'>pixelmatch</Link>
+          </PoweredBy>
           {screenshotDiff ? <img src={setMediaType(screenshotDiff)} alt='スクショの比較結果' /> : <div></div>}
         </ImageListItem>
       </ImageList>
